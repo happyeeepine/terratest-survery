@@ -10,13 +10,22 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    env:
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+
+    permissions:
+      id-token: write
+      contents: read
 
     steps:
+
     - uses: actions/checkout@v2
+
+    - name: Setup Terraform
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+        aws-region: ap-northeast-1
+    - run: aws sts get-caller-identity
+
     - name: Set up Go
       uses: actions/setup-go@v2
       with:
