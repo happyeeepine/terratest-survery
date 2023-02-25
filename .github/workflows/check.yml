@@ -1,0 +1,40 @@
+name: Testing new terraform code
+on:
+  push:
+    branches:
+      - develop
+  pull_request:
+    branches:
+      - develop
+      -
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+
+    - uses: actions/checkout@v2
+
+    - name: Setup Terraform
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+        aws-region: ap-northeast-1
+    - run: aws sts get-caller-identity
+
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.18
+
+    - name: Setup Dependencies
+      working-directory: test/
+      run:  go get -v -t -d && go mod tidy
+
+    - name: Test
+      working-directory: test/
+      run: go test -v
